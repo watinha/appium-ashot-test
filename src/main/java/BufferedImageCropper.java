@@ -8,14 +8,19 @@ import ru.yandex.qatools.ashot.cropper.ImageCropper;
 public class BufferedImageCropper extends ImageCropper {
 
     private static final long serialVersionUID = 1L;
+    private int dpi = 1;
+
+    public BufferedImageCropper (int dpi) {
+        this.dpi = dpi;
+    }
 
     @Override
     protected Screenshot cropScreenshot(BufferedImage image, Set<Coords> coords) {
         Coords cropArea = Coords.unity(coords);
-        int left = cropArea.x,
-            top = cropArea.y,
-            height = (new Double(cropArea.getHeight())).intValue(),
-            width = (new Double(cropArea.getWidth())).intValue();
+        int left = cropArea.x * this.dpi,
+            top = cropArea.y * this.dpi,
+            height = (new Double(cropArea.getHeight())).intValue() * this.dpi,
+            width = (new Double(cropArea.getWidth())).intValue() * this.dpi;
         if (top < 0) {
             height = height + top;
             top = 0;

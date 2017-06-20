@@ -26,22 +26,29 @@ import ru.yandex.qatools.ashot.shooting.ViewportPastingDecorator;
 public class Main {
     public static void main (String[] args) throws Exception {
         DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("platformName", "Android");
-        capabilities.setCapability("deviceName", "Android Emulator");
-        capabilities.setCapability("browserName", "Chrome");
+
+        //capabilities.setCapability("platformName", "Android");
+        //capabilities.setCapability("deviceName", "Android Emulator");
+        //capabilities.setCapability("browserName", "Chrome");
+
+        capabilities.setCapability("platformName", "iOS");
+        capabilities.setCapability("deviceName", "iPhone SE");
+        capabilities.setCapability("browserName", "Safari");
+        capabilities.setCapability("platformVersion", "10.3");
+        capabilities.setCapability("automationName", "XCUITest");
+
         WebDriver driver = new RemoteWebDriver(new URL("http://192.168.92.1:4723/wd/hub/"),
                                             capabilities);
 
         Main m = new Main(driver);
-        m.getSegments("http://facebook.com");
         //m.getScreenshot("http://esporte.uol.com.br/tenis", "1-uol");
         //m.getScreenshot("http://globoesporte.com/tenis", "2-globo");
         //m.getScreenshot("http://amazon.com", "3-amazon");
         //m.getScreenshot("http://google.com", "4-google");
         //m.getScreenshot("http://ebay.com", "5-ebay");
         //m.getScreenshot("http://twitter.com", "6-twitter");
-        //m.getScreenshot("http://facebook.com", "7-facebook");
-
+        m.getScreenshot("http://facebook.com", "7-facebook");
+        m.getSegments("http://facebook.com");
         driver.quit();
     }
 
@@ -51,7 +58,8 @@ public class Main {
     public Main (WebDriver driver) { this.setDriver(driver); }
 
     public void getSegments (String url) throws IOException {
-        AShot ashot = new AShot().imageCropper(new BufferedImageCropper());
+        AShot ashot = new AShot().imageCropper(new BufferedImageCropper(3));
+        ShootingStrategy strategy = new ScalingViewportPastingShootingStrategy().withScrollTimeout(100);
         WebElement target;
         Screenshot screenshot;
         int size;
@@ -62,7 +70,10 @@ public class Main {
             target = (WebElement) ((JavascriptExecutor) driver).executeScript(
                     "return window.elements[" + i + "];");
             screenshot = ashot.coordsProvider(new WebDriverCoordsProvider())
+                              .shootingStrategy(strategy)
                               .takeScreenshot(driver, target);
+            //screenshot = ashot.coordsProvider(new WebDriverCoordsProvider())
+            //                  .takeScreenshot(driver, target);
             ImageIO.write(screenshot.getImage(), "PNG", new File("data/" + i + ".png"));
             ((JavascriptExecutor) driver).executeScript(
                     "window.elements[" + i + "].style.opacity = 0;");
@@ -70,12 +81,12 @@ public class Main {
     }
 
     public void getScreenshot(String url, String name) throws IOException {
-        ShootingStrategy strategy = ShootingStrategies.viewportRetina(
-                100, 0, 0, 3f);
+        ShootingStrategy strategy = new ScalingViewportPastingShootingStrategy().withScrollTimeout(100);
         File screenshot = new File("data/" + name + "-ashot.png");
         driver.get(url);
         Screenshot ashot_screenshot = new AShot().shootingStrategy(strategy)
             .takeScreenshot(driver);
+        //Screenshot ashot_screenshot = new AShot().takeScreenshot(driver);
         BufferedImage ashot_image = ashot_screenshot.getImage();
         ImageIO.write(ashot_image, "PNG", screenshot);
 
