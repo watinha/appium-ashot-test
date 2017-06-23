@@ -17,6 +17,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import ru.yandex.qatools.ashot.AShot;
 import ru.yandex.qatools.ashot.Screenshot;
+import ru.yandex.qatools.ashot.coordinates.CoordsProvider;
 import ru.yandex.qatools.ashot.coordinates.WebDriverCoordsProvider;
 import ru.yandex.qatools.ashot.shooting.ScalingDecorator;
 import ru.yandex.qatools.ashot.shooting.ShootingStrategies;
@@ -27,15 +28,15 @@ public class Main {
     public static void main (String[] args) throws Exception {
         DesiredCapabilities capabilities = new DesiredCapabilities();
 
-        //capabilities.setCapability("platformName", "Android");
-        //capabilities.setCapability("deviceName", "Android Emulator");
-        //capabilities.setCapability("browserName", "Chrome");
+        capabilities.setCapability("platformName", "Android");
+        capabilities.setCapability("deviceName", "Android Emulator");
+        capabilities.setCapability("browserName", "Chrome");
 
-        capabilities.setCapability("platformName", "iOS");
-        capabilities.setCapability("deviceName", "iPhone SE");
-        capabilities.setCapability("browserName", "Safari");
-        capabilities.setCapability("platformVersion", "10.3");
-        capabilities.setCapability("automationName", "XCUITest");
+        //capabilities.setCapability("platformName", "iOS");
+        //capabilities.setCapability("deviceName", "iPhone SE");
+        //capabilities.setCapability("browserName", "Safari");
+        //capabilities.setCapability("platformVersion", "10.3");
+        //capabilities.setCapability("automationName", "XCUITest");
 
         WebDriver driver = new RemoteWebDriver(new URL("http://192.168.92.1:4723/wd/hub/"),
                                             capabilities);
@@ -60,6 +61,7 @@ public class Main {
     public void getSegments (String url) throws IOException {
         AShot ashot = new AShot().imageCropper(new BufferedImageCropper(3));
         ShootingStrategy strategy = new ScalingViewportPastingShootingStrategy().withScrollTimeout(100);
+        CoordsProvider provider = new WebDriverCoordsProvider();
         WebElement target;
         Screenshot screenshot;
         int size;
@@ -69,12 +71,16 @@ public class Main {
         for (int i = (size - 1); i >= 0; i--) {
             target = (WebElement) ((JavascriptExecutor) driver).executeScript(
                     "return window.elements[" + i + "];");
-            screenshot = ashot.coordsProvider(new WebDriverCoordsProvider())
-                              .shootingStrategy(strategy)
-                              .takeScreenshot(driver, target);
-            //screenshot = ashot.coordsProvider(new WebDriverCoordsProvider())
-            //                  .takeScreenshot(driver, target);
-            ImageIO.write(screenshot.getImage(), "PNG", new File("data/" + i + ".png"));
+            System.out.println(i + " " + target.getTagName());
+            if (provider.ofElement(driver, target).isEmpty() || target.getTagName().equalsIgnoreCase("script") ||
+                                                                target.getTagName().equalsIgnoreCase("style")) {
+                System.out.println("Empty...");
+            } else {
+                screenshot = ashot.coordsProvider(provider)
+                                  .shootingStrategy(strategy)
+                                  .takeScreenshot(driver, target);
+                ImageIO.write(screenshot.getImage(), "PNG", new File("data/" + i + ".png"));
+            }
             ((JavascriptExecutor) driver).executeScript(
                     "window.elements[" + i + "].style.opacity = 0;");
         }

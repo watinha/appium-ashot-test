@@ -48,7 +48,9 @@ public class ScalingViewportPastingShootingStrategy implements ShootingStrategy 
 
             if (dpi == -1) {
                 dpi = part.getWidth() / pageWidth;
-                finalImage = new BufferedImage(Math.round(pageWidth * dpi), Math.round(shootingArea.height * dpi), BufferedImage.TYPE_3BYTE_BGR);
+                finalImage = new BufferedImage(Math.round(pageWidth * dpi),
+                                               Math.round(shootingArea.height * dpi),
+                                               BufferedImage.TYPE_3BYTE_BGR);
                 graphics = finalImage.createGraphics();
             }
 
@@ -64,8 +66,7 @@ public class ScalingViewportPastingShootingStrategy implements ShootingStrategy 
 
     @Override
     public Set<Coords> prepareCoords(Set<Coords> coordsSet) {
-        return coordsSet;
-        //return shootingArea == null ? coordsSet : shiftCoords(coordsSet, shootingArea);
+        return shootingArea == null ? coordsSet : shiftCoords(coordsSet, shootingArea);
     }
 
     public int getFullHeight(WebDriver driver) {
@@ -90,10 +91,7 @@ public class ScalingViewportPastingShootingStrategy implements ShootingStrategy 
     }
 
     private Coords getShootingCoords(Set<Coords> coords, int pageWidth, int pageHeight, int viewPortHeight) {
-        if (true || coords == null || coords.isEmpty()) {
-            return new Coords(0, 0, pageWidth, pageHeight);
-        }
-        return extendShootingArea(Coords.unity(coords), viewPortHeight, pageHeight);
+        return new Coords(0, 0, pageWidth, pageHeight);
     }
 
     private Set<Coords> shiftCoords(Set<Coords> coordsSet, Coords shootingArea) {
