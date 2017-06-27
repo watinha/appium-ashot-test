@@ -121,7 +121,9 @@ public class Main {
         ShootingStrategy strategy = new ScalingViewportPastingShootingStrategy().withScrollTimeout(100);
         File screenshot = new File("data/" + name + "-ashot.png");
         driver.get(url);
-        Screenshot ashot_screenshot = new AShot().shootingStrategy(strategy)
+        Screenshot ashot_screenshot = new AShot()
+            .coordsProvider(new WebDriverCoordsProvider())
+            .shootingStrategy(strategy)
             .takeScreenshot(driver);
         //Screenshot ashot_screenshot = new AShot().takeScreenshot(driver);
         BufferedImage ashot_image = ashot_screenshot.getImage();
