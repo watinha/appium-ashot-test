@@ -48,7 +48,7 @@ public class Main {
         //m.getScreenshot("http://google.com", "4-google");
         //m.getScreenshot("http://ebay.com", "5-ebay");
         //m.getScreenshot("http://twitter.com", "6-twitter");
-        m.getScreenshot("http://facebook.com", "7-facebook");
+        m.getScreenshot("http://facebook.com", "facebook");
         m.getSegments("http://facebook.com");
         driver.quit();
     }
@@ -58,19 +58,50 @@ public class Main {
     public void setDriver(WebDriver driver){ this.driver = driver; }
     public Main (WebDriver driver) { this.setDriver(driver); }
 
+    public int[] orderBySize (WebDriver driver, int size) {
+        int sizes[] = new int[size],
+            index[] = new int[size],
+            smallest;
+        WebElement target;
+        System.out.println("ordering");
+        for (int i = 0; i < size; i++) {
+            target = (WebElement) ((JavascriptExecutor) driver).executeScript(
+                    "return window.elements[" + i + "];");
+            sizes[i] = target.getSize().getHeight() *
+                       target.getSize().getWidth();
+
+        }
+        for (int i = 0; i < size; i++) {
+            smallest = -1;
+            for (int j = (size - 1); j >= 0; j--) {
+                if ((smallest == -1 || smallest > sizes[j]) && sizes[j] != -1) {
+                    smallest = sizes[j];
+                    index[i] = j;
+                }
+            }
+            sizes[index[i]] = -1;
+            System.out.print(index[i] + " ");
+        }
+        System.out.println("done.ordering");
+        return index;
+    }
+
     public void getSegments (String url) throws IOException {
         AShot ashot = new AShot().imageCropper(new BufferedImageCropper(3));
         ShootingStrategy strategy = new ScalingViewportPastingShootingStrategy().withScrollTimeout(100);
         CoordsProvider provider = new WebDriverCoordsProvider();
         WebElement target;
         Screenshot screenshot;
-        int size;
+        int size,
+            orderedIndex[];
         driver.get(url);
         size = Integer.parseInt(((JavascriptExecutor) driver).executeScript(
             "window.elements = document.querySelectorAll('*'); return window.elements.length;").toString());
-        for (int i = (size - 1); i >= 0; i--) {
+        orderedIndex = this.orderBySize(driver, size);
+
+        for (int i = 0; i < size; i++) {
             target = (WebElement) ((JavascriptExecutor) driver).executeScript(
-                    "return window.elements[" + i + "];");
+                    "return window.elements[" + orderedIndex[i] + "];");
             System.out.println(i + " " + target.getTagName());
             if (provider.ofElement(driver, target).isEmpty() || target.getTagName().equalsIgnoreCase("script") ||
                                                                 target.getTagName().equalsIgnoreCase("style")) {
@@ -82,7 +113,7 @@ public class Main {
                 ImageIO.write(screenshot.getImage(), "PNG", new File("data/" + i + ".png"));
             }
             ((JavascriptExecutor) driver).executeScript(
-                    "window.elements[" + i + "].style.opacity = 0;");
+                    "window.elements[" + orderedIndex[i] + "].style.opacity = 0;");
         }
     }
 
