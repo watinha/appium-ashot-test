@@ -125,7 +125,6 @@ public class Main {
             .coordsProvider(new WebDriverCoordsProvider())
             .shootingStrategy(strategy)
             .takeScreenshot(driver);
-        //Screenshot ashot_screenshot = new AShot().takeScreenshot(driver);
         BufferedImage ashot_image = ashot_screenshot.getImage();
         ImageIO.write(ashot_image, "PNG", screenshot);
 
